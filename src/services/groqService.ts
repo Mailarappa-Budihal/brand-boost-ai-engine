@@ -1,6 +1,6 @@
 
 // Groq API integration for all AI-powered features
-const GROQ_API_KEY = 'gsk_your_groq_api_key_here'; // Users will need to add their Groq API key
+const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 interface GroqResponse {
