@@ -38,7 +38,10 @@ export function useAuth() {
           id: user.id,
           email: user.email!,
           name: user.user_metadata?.name || user.email!.split('@')[0],
-          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`
+          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+          title: '',
+          summary: '',
+          skills: []
         })
 
       if (error) throw error

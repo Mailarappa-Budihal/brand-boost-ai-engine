@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
+import { DatabaseSetupGuide } from '@/components/DatabaseSetupGuide'
 import { User, Mail, Briefcase, Save, Plus, X } from 'lucide-react'
 
 interface UserProfile {
@@ -28,6 +29,7 @@ export function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [newSkill, setNewSkill] = useState('')
+  const [databaseError, setDatabaseError] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -43,6 +45,13 @@ export function Profile() {
         .eq('id', user!.id)
         .single()
 
+      if (error && error.code === '42P01') {
+        // Table doesn't exist
+        setDatabaseError(true)
+        setLoading(false)
+        return
+      }
+
       if (error && error.code !== 'PGRST116') {
         throw error
       }
@@ -54,7 +63,7 @@ export function Profile() {
         const newProfile = {
           id: user!.id,
           email: user!.email!,
-          name: user!.email!.split('@')[0],
+          name: user!.user_metadata?.name || user!.email!.split('@')[0],
           title: '',
           summary: '',
           skills: [],
@@ -62,13 +71,17 @@ export function Profile() {
         }
         setProfile(newProfile)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching profile:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load profile",
-        variant: "destructive",
-      })
+      if (error.code === '42P01') {
+        setDatabaseError(true)
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -133,6 +146,14 @@ export function Profile() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    )
+  }
+
+  if (databaseError) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <DatabaseSetupGuide />
       </div>
     )
   }
